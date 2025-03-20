@@ -112,10 +112,11 @@
     </div>
 
     <script>
-        // 初始化thirdweb
-        const clientId = "89ab06a1e6ad2ee40d0148c986c59149";
+     // 在login.html中修改thirdweb初始化部分
         const thirdwebConnect = new ThirdwebConnect.ConnectWallet({
-            clientId: clientId
+            clientId: "89ab06a1e6ad2ee40d0148c986c59149",
+            // 添加您的Railway应用URL作为重定向URL
+            redirectUrl: "https://h5game-production.up.railway.app"
         });
         
         // DOM元素

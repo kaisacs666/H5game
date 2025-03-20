@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>登录 - H5游戏平台</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <script src="https://cdn.thirdweb.com/js/connect/dist/thirdweb-connect.js"></script>
+    <style>
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+        
+        .login-box {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .login-title {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        
+        .login-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .login-button:hover {
+            background-color: #45a049;
+        }
+        
+        .wallet-info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .logout-button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .logout-button:hover {
+            background-color: #d32f2f;
+        }
+        
+        .enter-button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin-top: 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .enter-button:hover {
+            background-color: #0b7dda;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <h1 class="login-title">欢迎来到H5游戏平台</h1>
+            <p>请使用您的钱包登录以访问游戏</p>
+            
+            <button id="login-button" class="login-button">连接钱包登录</button>
+            
+            <div id="wallet-info" class="wallet-info">
+                <p>已连接钱包地址: <span id="wallet-address"></span></p>
+                <button id="logout-button" class="logout-button">登出</button>
+            </div>
+            
+            <a id="enter-button" class="enter-button" style="display:none;" href="list.html">进入游戏平台</a>
+        </div>
+    </div>
+
+    <script>
+        // 初始化thirdweb
+        const clientId = "89ab06a1e6ad2ee40d0148c986c59149";
+        const thirdwebConnect = new ThirdwebConnect.ConnectWallet({
+            clientId: clientId
+        });
+        
+        // DOM元素
+        const loginButton = document.getElementById('login-button');
+        const walletInfo = document.getElementById('wallet-info');
+        const walletAddress = document.getElementById('wallet-address');
+        const logoutButton = document.getElementById('logout-button');
+        const enterButton = document.getElementById('enter-button');
+        
+        // 检查是否已经登录
+        function checkLoginStatus() {
+            const storedWalletAddress = localStorage.getItem('walletAddress');
+            const loginTime = localStorage.getItem('loginTime');
+            
+            if (storedWalletAddress && loginTime) {
+                // 检查登录是否过期（24小时）
+                const currentTime = new Date().getTime();
+                const loginTimestamp = parseInt(loginTime);
+                const timeDifference = currentTime - loginTimestamp;
+                const hoursDifference = timeDifference / (1000 * 60 * 60);
+                
+                if (hoursDifference < 24) {
+                    // 登录有效
+                    walletAddress.textContent = storedWalletAddress;
+                    walletInfo.style.display = 'block';
+                    loginButton.style.display = 'none';
+                    enterButton.style.display = 'inline-block';
+                    return true;
+                } else {
+                    // 登录已过期
+                    localStorage.removeItem('walletAddress');
+                    localStorage.removeItem('loginTime');
+                }
+            }
+            return false;
+        }
+        
+        // 登录函数
+        async function login() {
+            try {
+                const wallet = await thirdwebConnect.connect();
+                const address = wallet.address;
+                
+                // 存储钱包地址和登录时间
+                localStorage.setItem('walletAddress', address);
+                localStorage.setItem('loginTime', new Date().getTime().toString());
+                
+                // 更新UI
+                walletAddress.textContent = address;
+                walletInfo.style.display = 'block';
+                loginButton.style.display = 'none';
+                enterButton.style.display = 'inline-block';
+                
+                console.log("登录成功:", address);
+            } catch (error) {
+                console.error("登录失败:", error);
+                alert("登录失败，请重试");
+            }
+        }
+        
+        // 登出函数
+        function logout() {
+            localStorage.removeItem('walletAddress');
+            localStorage.removeItem('loginTime');
+            
+            // 更新UI
+            walletInfo.style.display = 'none';
+            loginButton.style.display = 'inline-block';
+            enterButton.style.display = 'none';
+            
+            console.log("已登出");
+        }
+        
+        // 事件监听器
+        loginButton.addEventListener('click', login);
+        logoutButton.addEventListener('click', logout);
+        
+        // 页面加载时检查登录状态
+        window.addEventListener('DOMContentLoaded', checkLoginStatus);
+    </script>
+</body>
+</html>

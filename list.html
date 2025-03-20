@@ -3,8 +3,86 @@
 <head>
 <title>Games List</title>
 <link rel="stylesheet" href="./css/style.css">
+<script>
+// 检查用户是否已登录
+function checkLogin() {
+    const walletAddress = localStorage.getItem('walletAddress');
+    const loginTime = localStorage.getItem('loginTime');
+    
+    if (!walletAddress || !loginTime) {
+        // 未登录，重定向到登录页面
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // 检查登录是否过期（24小时）
+    const currentTime = new Date().getTime();
+    const loginTimestamp = parseInt(loginTime);
+    const timeDifference = currentTime - loginTimestamp;
+    const hoursDifference = timeDifference / (1000 * 60 * 60);
+    
+    if (hoursDifference >= 24) {
+        // 登录已过期，重定向到登录页面
+        localStorage.removeItem('walletAddress');
+        localStorage.removeItem('loginTime');
+        window.location.href = 'login.html';
+        return;
+    }
+}
+
+// 页面加载时检查登录状态
+window.addEventListener('DOMContentLoaded', checkLogin);
+
+// 登出函数
+function logout() {
+    localStorage.removeItem('walletAddress');
+    localStorage.removeItem('loginTime');
+    window.location.href = 'login.html';
+}
+</script>
+<style>
+.user-info {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+}
+
+.wallet-address {
+    margin-right: 10px;
+    font-size: 14px;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.logout-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.logout-btn:hover {
+    background-color: #d32f2f;
+}
+</style>
 </head>
 <body>
+<div class="user-info">
+    <div class="wallet-address" id="wallet-display"></div>
+    <button class="logout-btn" onclick="logout()">登出</button>
+</div>
+
 <div class="container">
 <div class="box">
 <input type="text" id="gsearchbar" onkeyup="document.querySelectorAll('#glist>a').forEach(l=>l.style.display=l.textContent.toUpperCase().includes(this.value.toUpperCase().replace(/ /g,''))?'block':'none')" autocomplete="off" spellcheck="false" placeholder="Search" />
@@ -283,6 +361,17 @@
 </div>
 </div>
 </div>
-<script> </script>
+
+<script>
+// 显示钱包地址
+document.addEventListener('DOMContentLoaded', function() {
+    const walletAddress = localStorage.getItem('walletAddress');
+    if (walletAddress) {
+        // 显示钱包地址（只显示前6位和后4位）
+        const shortAddress = walletAddress.substring(0, 6) + '...' + walletAddress.substring(walletAddress.length - 4);
+        document.getElementById('wallet-display').textContent = shortAddress;
+    }
+});
+</script>
 </body>
 </html>
